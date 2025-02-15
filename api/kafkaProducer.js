@@ -1,9 +1,8 @@
-// kafkaProducer.js
 const { Kafka } = require('kafkajs');
 
 const kafka = new Kafka({
   clientId: 'my-trading-app',
-  brokers: ['localhost:9092']  // Kafka 브로커 주소에 맞게 수정하세요.
+  brokers: ['127.0.0.1:9093'], // 원래 'localhost:9092' → '127.0.0.1:9093'로 변경
 });
 
 const producer = kafka.producer();
