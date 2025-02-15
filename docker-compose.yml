@@ -19,17 +19,35 @@ services:
       - "2181:2181"
   kafka:
     image: confluentinc/cp-kafka:latest
-    depends_on:
-      - zookeeper
-    environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://127.0.0.1:9093
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1 # <=== 추가
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1  # <=== 추가
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1  # <=== 추가
+    container_name: trustin-kafka-1
+    restart: always
     ports:
       - "9092:9092"
-      - "9093:9093"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: trustin-zookeeper-1:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_LOG_SEGMENT_BYTES: 1073741824
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    volumes:
+      - C:\Users\x1b\Desktop\Trustin\kafka-config\server.properties:/etc/kafka/server.properties
+
+
+  db:
+    image: postgres:latest
+    container_name: trustin-db
+    restart: always
+    environment:
+      POSTGRES_DB: trading
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: Qwer1234**
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+
