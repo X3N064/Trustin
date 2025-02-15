@@ -1,0 +1,32 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>TradingView Chart</title>
+</head>
+<body>
+  <!-- TradingView Widget BEGIN -->
+  <div class="tradingview-widget-container">
+    <div id="tradingview_chart"></div>
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    <script type="text/javascript">
+      new TradingView.widget({
+        "width": 980,
+        "height": 610,
+        "symbol": "NASDAQ:TSLA",  // 테슬라 차트. 엔비디아는 "NASDAQ:NVDA" 등으로 변경 가능
+        "interval": "D",
+        "timezone": "Etc/UTC",
+        "theme": "light",
+        "style": "1",
+        "locale": "en",
+        "toolbar_bg": "#f1f3f6",
+        "enable_publishing": false,
+        "allow_symbol_change": true,
+        "container_id": "tradingview_chart"
+      });
+    </script>
+  </div>
+  <!-- TradingView Widget END -->
+</body>
+</html>
