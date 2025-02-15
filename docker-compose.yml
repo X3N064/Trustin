@@ -1,53 +1,59 @@
-version: '3'
+version: '3.8'
 services:
-  api:
-    build: ./api
-    ports:
-      - "3000:3000"
-  nginx:
-    image: nginx:latest
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-    ports:
-      - "80:80"
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
     ports:
       - "2181:2181"
+
   kafka:
     image: confluentinc/cp-kafka:latest
-    container_name: trustin-kafka-1
-    restart: always
+    depends_on:
+      - zookeeper
     ports:
       - "9092:9092"
     environment:
       KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: trustin-zookeeper-1:2181
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-      KAFKA_LOG_RETENTION_HOURS: 168
-      KAFKA_LOG_SEGMENT_BYTES: 1073741824
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:9092"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT"
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-    volumes:
-      - C:\Users\x1b\Desktop\Trustin\kafka-config\server.properties:/etc/kafka/server.properties
-
 
   db:
     image: postgres:latest
-    container_name: trustin-db
     restart: always
     environment:
-      POSTGRES_DB: trading
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: Qwer1234**
+      POSTGRES_DB: trading
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  api:
+    build:
+      context: ./api  # Dockerfile이 있는 api 폴더를 컨텍스트로 설정
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+      - kafka
+    environment:
+      DB_HOST: db
+      DB_USER: admin
+      DB_PASSWORD: Qwer1234**
+      DB_NAME: trading
+    volumes:
+      - .:/app
+
+  nginx:
+      image: nginx:latest
+      volumes:
+        - ./nginx.conf:/etc/nginx/nginx.conf
+      ports:
+        - "80:80"
 volumes:
   postgres_data:
-

@@ -1,8 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const pool = require('./db');  
+const pool = require('./db');
 const sendOrderToKafka = require('./kafkaProducer');
-
 
 const app = express();
 const port = 3000;
@@ -28,7 +27,7 @@ app.post('/order', async (req, res) => {
         );
 
         const order = result.rows[0];
-        await sendOrderToKafka(order); // ✅ Kafka로 주문을 전송
+        await sendOrderToKafka(order); // Kafka로 주문을 전송
         res.json({ status: "Order received", order });
     } catch (error) {
         console.error(error);
@@ -36,9 +35,8 @@ app.post('/order', async (req, res) => {
     }
 });
 
-
 app.patch('/order/:id', async (req, res) => {
-    const { status } = req.body; // "COMPLETED" 또는 "CANCELLED"
+    const { status } = req.body;
     const { id } = req.params;
 
     if (!["COMPLETED", "CANCELLED"].includes(status)) {
@@ -63,5 +61,3 @@ app.patch('/order/:id', async (req, res) => {
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });
-
-require('./kafkaConsumer'); // ✅ Kafka Consumer 실행 (매칭 엔진 자동 실행)
