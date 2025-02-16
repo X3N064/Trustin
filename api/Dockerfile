@@ -21,7 +21,7 @@ RUN g++ -o matching_engine matching_engine.cpp
 RUN chmod +x matching_engine
 
 # 컨테이너 실행시 Node 서버 시작
-CMD ["node", "server.js"]
+CMD ["sh", "-c", "node server.js & node kafkaConsumer.js"]
 
 # API 포트 오픈
 EXPOSE 3000

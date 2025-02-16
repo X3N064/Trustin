@@ -1,4 +1,4 @@
-const express = require('express');
+const express = require('express'); 
 const bodyParser = require('body-parser');
 const pool = require('./db');
 const sendOrderToKafka = require('./kafkaProducer');
@@ -7,6 +7,25 @@ const app = express();
 const port = 3000;
 
 app.use(bodyParser.json());
+
+const server = require('http').createServer(app);
+const { Server } = require("socket.io");
+const io = new Server(server, {
+    cors: {
+        origin: "*", // ✅ 모든 출처 허용 (필요하면 수정 가능)
+        methods: ["GET", "POST"]
+    }
+});
+
+io.on("connection", (socket) => {
+    console.log("✅ Client connected to WebSocket");
+
+    socket.emit("message", { message: "Welcome to the trading platform!" });
+});
+
+function sendOrderUpdate(order) {
+    io.emit("order_update", order);
+}
 
 app.get('/order', async (req, res) => {
     try {
@@ -27,7 +46,9 @@ app.post('/order', async (req, res) => {
         );
 
         const order = result.rows[0];
-        await sendOrderToKafka(order); // Kafka로 주문을 전송
+        await sendOrderToKafka(order);
+        sendOrderUpdate(order);
+
         res.json({ status: "Order received", order });
     } catch (error) {
         console.error(error);
@@ -35,29 +56,6 @@ app.post('/order', async (req, res) => {
     }
 });
 
-app.patch('/order/:id', async (req, res) => {
-    const { status } = req.body;
-    const { id } = req.params;
-
-    if (!["COMPLETED", "CANCELLED"].includes(status)) {
-        return res.status(400).json({ error: "Invalid status value" });
-    }
-
-    try {
-        const result = await pool.query(
-            'UPDATE orders SET status = $1 WHERE id = $2 RETURNING *',
-            [status, id]
-        );
-        if (result.rowCount === 0) {
-            return res.status(404).json({ error: "Order not found" });
-        }
-        res.json({ status: "Order updated", order: result.rows[0] });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Failed to update order status" });
-    }
-});
-
-app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+server.listen(port, () => {
+    console.log(`🚀 Server running on port ${port}`);
 });
